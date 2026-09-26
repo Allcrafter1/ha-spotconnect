@@ -57,9 +57,10 @@ new app version.
 
 If downloading, validation, building, PR creation, or merging fails,
 the update is not merged. The workflow leaves the PR open where applicable and
-creates a GitHub issue for attention. Failed workflow runs are also visible in
-the repository's Actions tab and use the repository owner's normal GitHub
-Actions notification settings.
+creates a GitHub issue assigned to the repository owner. That assignment
+creates a personal GitHub notification; email delivery still follows the
+owner's GitHub notification settings. Failed workflow runs are also visible in
+the repository's Actions tab.
 
 Home Assistant offers the published version as a normal app update. To also
 install it without interaction, enable **Automatic updates** on the installed

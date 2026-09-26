@@ -60,7 +60,7 @@ jobs:
             title="SpotConnect ${LATEST} release archive is unavailable"
             existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
             if [[ -z "${existing}" ]]; then
-              gh issue create --title "${title}" --body "The automated update found release ${LATEST}, but its expected archive could not be downloaded from ${url}. Please inspect the upstream release."
+              gh issue create --assignee "${GITHUB_REPOSITORY_OWNER}" --title "${title}" --body "The automated update found release ${LATEST}, but its expected archive could not be downloaded from ${url}. Please inspect the upstream release."
             fi
             exit 1
           fi
@@ -104,7 +104,7 @@ jobs:
             title="Update SpotConnect to ${LATEST}"
             existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
             if [[ -z "${existing}" ]]; then
-              gh issue create --title "${title}" --body "SpotConnect ${LATEST} is available, but the automated workflow could not push its prepared update branch. Please update from ${CURRENT} manually and inspect the failed workflow run."
+              gh issue create --assignee "${GITHUB_REPOSITORY_OWNER}" --title "${title}" --body "SpotConnect ${LATEST} is available, but the automated workflow could not push its prepared update branch. Please update from ${CURRENT} manually and inspect the failed workflow run."
             fi
             exit 1
           fi
@@ -118,7 +118,7 @@ jobs:
               title="SpotConnect ${LATEST} update branch is ready"
               existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
               if [[ -z "${existing}" ]]; then
-                gh issue create --title "${title}" --body "The workflow prepared and pushed branch \`${branch}\`, but repository policy prevented it from opening a pull request. Create the PR manually."
+                gh issue create --assignee "${GITHUB_REPOSITORY_OWNER}" --title "${title}" --body "The workflow prepared and pushed branch \`${branch}\`, but repository policy prevented it from opening a pull request. Create the PR manually."
               fi
               exit 1
             fi
@@ -188,6 +188,7 @@ jobs:
           existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
           if [[ -z "${existing}" ]]; then
             gh issue create \
+              --assignee "${GITHUB_REPOSITORY_OWNER}" \
               --title "${title}" \
               --body "The automatic SpotConnect update workflow failed. No unverified update was merged. Inspect the failed run: ${RUN_URL}"
           else
