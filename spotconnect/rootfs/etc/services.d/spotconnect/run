@@ -1,0 +1,92 @@
+#!/usr/bin/with-contenv bashio
+set -Eeuo pipefail
+
+declare -a pids=()
+
+airplay_enabled="$(bashio::config 'airplay_enabled')"
+upnp_enabled="$(bashio::config 'upnp_enabled')"
+network_interface="$(bashio::config 'network_interface')"
+bitrate="$(bashio::config 'bitrate')"
+name_format="$(bashio::config 'name_format')"
+store_credentials="$(bashio::config 'store_credentials')"
+log_level="$(bashio::config 'log_level')"
+airplay_codec="$(bashio::config 'airplay_codec')"
+upnp_codec="$(bashio::config 'upnp_codec')"
+
+if ! bashio::var.true "${airplay_enabled}" && ! bashio::var.true "${upnp_enabled}"; then
+  bashio::exit.nok "Enable at least one of AirPlay or UPnP"
+fi
+
+case "${bitrate}" in 96|160|320) ;; *) bashio::exit.nok "Invalid bitrate: ${bitrate}" ;; esac
+case "${log_level}" in error|warn|info|debug|sdebug) ;; *) bashio::exit.nok "Invalid log level: ${log_level}" ;; esac
+case "${airplay_codec}" in alac|pcm) ;; *) bashio::exit.nok "Invalid AirPlay codec: ${airplay_codec}" ;; esac
+if [[ ! "${upnp_codec}" =~ ^(flc(:[0-9])?|wav|pcm|mp3(:[0-9]+)?|aac(:[0-9]+)?|vorbis(:[0-9]+)?|opus(:[0-9]+)?)$ ]]; then
+  bashio::exit.nok "Invalid UPnP codec: ${upnp_codec}"
+fi
+if [[ "${name_format}" != *%s* ]]; then
+  bashio::exit.nok "Name format must contain exactly one %s placeholder"
+fi
+format_without_placeholder="${name_format/\%s/}"
+format_without_escaped_percent="${format_without_placeholder//\%\%/}"
+if [[ "${format_without_escaped_percent}" == *%* ]]; then
+  bashio::exit.nok "Name format may only contain one %s placeholder and escaped %% sequences"
+fi
+
+mkdir -p /data/credentials
+chmod 0700 /data/credentials
+
+terminate_children() {
+  trap - EXIT INT TERM
+  if [[ "${#pids[@]}" -gt 0 ]]; then
+    kill -TERM "${pids[@]}" 2>/dev/null || true
+    wait "${pids[@]}" 2>/dev/null || true
+  fi
+}
+
+trap 'terminate_children; exit 0' INT TERM
+
+start_bridge() {
+  local mode="$1"
+  local binary="$2"
+  local codec="$3"
+  local config_file="/data/${mode}.xml"
+  local -a command=(
+    "${binary}"
+    -x "${config_file}"
+    -I
+    -k
+    -Z
+    -r "${bitrate}"
+    -c "${codec}"
+    -N "${name_format}"
+    -d "all=${log_level}"
+  )
+
+  if [[ -n "${network_interface}" ]]; then
+    command+=(-b "${network_interface}")
+  fi
+  if bashio::var.true "${store_credentials}"; then
+    command+=(-J /data/credentials)
+  fi
+
+  bashio::log.info "Starting ${mode} bridge"
+  "${command[@]}" &
+  pids+=("$!")
+}
+
+if bashio::var.true "${airplay_enabled}"; then
+  start_bridge spotraop /usr/bin/spotraop "${airplay_codec}"
+fi
+
+if bashio::var.true "${upnp_enabled}"; then
+  start_bridge spotupnp /usr/bin/spotupnp "${upnp_codec}"
+fi
+
+set +e
+wait -n "${pids[@]}"
+exit_code="$?"
+set -e
+
+bashio::log.warning "A SpotConnect bridge exited with code ${exit_code}"
+terminate_children
+exit "${exit_code}"

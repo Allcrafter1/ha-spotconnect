@@ -1,0 +1,28 @@
+configuration:
+  airplay_enabled:
+    name: AirPlay-Bridge aktivieren
+    description: AirPlay-Empfänger erkennen und als Spotify-Connect-Geräte bereitstellen.
+  upnp_enabled:
+    name: UPnP-Bridge aktivieren
+    description: Zusätzlich UPnP-/DLNA-Renderer erkennen und als Spotify-Connect-Geräte bereitstellen.
+  network_interface:
+    name: Netzwerkschnittstelle oder IP-Adresse
+    description: Für automatische Auswahl leer lassen. Bei falscher Erkennung den Namen der Host-Schnittstelle oder die LAN-IP eintragen.
+  bitrate:
+    name: Spotify-Bitrate
+    description: Von Spotify angeforderte Vorbis-Bitrate in kbit/s.
+  name_format:
+    name: Format des Gerätenamens
+    description: C-Format für erzeugte Spotify-Geräte. %s muss als Platzhalter für den Empfängernamen enthalten sein.
+  store_credentials:
+    name: Wiederverwendbare Spotify-Anmeldedaten speichern
+    description: Pro Gerät wiederverwendbare Daten geschützt im App-Speicher ablegen, damit die Geräte nach Neustarts wieder verbunden werden.
+  log_level:
+    name: Protokollierungsstufe
+    description: Ausführlichkeit der SpotConnect-Protokolle.
+  airplay_codec:
+    name: AirPlay-Ausgabecodec
+    description: ALAC wird empfohlen; PCM kann bei ungewöhnlichen Empfängern helfen.
+  upnp_codec:
+    name: UPnP-Ausgabecodec
+    description: SpotConnect-Codec wie flc, wav, mp3:320, aac:320, vorbis:320 oder opus:320.

@@ -1,0 +1,11 @@
+#!/usr/bin/env bashio
+
+declare exit_code="${1}"
+
+if [[ "${exit_code}" -ne 0 ]] && [[ "${exit_code}" -ne 256 ]]; then
+  bashio::log.warning "SpotConnect stopped with exit code ${exit_code}; stopping the app"
+  echo "${exit_code}" > /run/s6-linux-init-container-results/exitcode
+  exec /run/s6/basedir/bin/halt
+fi
+
+bashio::log.info "SpotConnect service stopped"

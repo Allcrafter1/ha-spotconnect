@@ -1,0 +1,122 @@
+name: Check SpotConnect upstream
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: spotconnect-upstream-update
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check for a new stable release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Check latest release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current="$(tr -d '[:space:]' < .upstream-version)"
+          latest="$(gh api repos/philippe44/SpotConnect/releases/latest --jq .tag_name)"
+          if [[ ! "${latest}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Unexpected upstream tag: ${latest}" >&2
+            exit 1
+          fi
+          if [[ "${latest}" == "${current}" ]]; then
+            echo "update=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          newest="$(printf '%s\n%s\n' "${current}" "${latest}" | sort -V | tail -n1)"
+          if [[ "${newest}" != "${latest}" ]]; then
+            echo "Latest release ${latest} is older than pinned ${current}; ignoring"
+            echo "update=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "update=true" >> "${GITHUB_OUTPUT}"
+          echo "current=${current}" >> "${GITHUB_OUTPUT}"
+          echo "latest=${latest}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download and verify release archive
+        if: steps.release.outputs.update == 'true'
+        id: archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ steps.release.outputs.latest }}
+        run: |
+          url="https://github.com/philippe44/SpotConnect/releases/download/${LATEST}/SpotConnect-${LATEST}.zip"
+          if ! curl --fail --location --retry 3 --output /tmp/spotconnect.zip "${url}"; then
+            title="SpotConnect ${LATEST} release archive is unavailable"
+            existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
+            if [[ -z "${existing}" ]]; then
+              gh issue create --title "${title}" --body "The automated update found release ${LATEST}, but its expected archive could not be downloaded from ${url}. Please inspect the upstream release."
+            fi
+            exit 1
+          fi
+          checksum="$(sha256sum /tmp/spotconnect.zip | cut -d ' ' -f1)"
+          echo "checksum=${checksum}" >> "${GITHUB_OUTPUT}"
+
+      - name: Prepare update commit
+        if: steps.release.outputs.update == 'true'
+        env:
+          CURRENT: ${{ steps.release.outputs.current }}
+          LATEST: ${{ steps.release.outputs.latest }}
+          CHECKSUM: ${{ steps.archive.outputs.checksum }}
+        run: |
+          printf '%s\n' "${LATEST}" > .upstream-version
+          sed -Ei "s/^(ARG SPOTCONNECT_VERSION=).*/\1${LATEST}/" spotconnect/Dockerfile
+          sed -Ei "s/^(ARG SPOTCONNECT_SHA256=).*/\1${CHECKSUM}/" spotconnect/Dockerfile
+          sed -Ei "s/^version: \".*\"/version: \"${LATEST}-1\"/" spotconnect/config.yaml
+          sed -i "3i\\
+          ## ${LATEST}-1\\
+          \\
+          - Update SpotConnect from ${CURRENT} to ${LATEST}.\\
+          " spotconnect/CHANGELOG.md
+          ./tests/validate.sh
+
+      - name: Push update branch and open pull request
+        if: steps.release.outputs.update == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT: ${{ steps.release.outputs.current }}
+          LATEST: ${{ steps.release.outputs.latest }}
+        run: |
+          branch="automation/spotconnect-${LATEST}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "${branch}"
+          git add .upstream-version spotconnect/Dockerfile spotconnect/config.yaml spotconnect/CHANGELOG.md
+          git commit -m "Update SpotConnect to ${LATEST}"
+          if ! git push --force-with-lease origin "HEAD:refs/heads/${branch}"; then
+            title="Update SpotConnect to ${LATEST}"
+            existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
+            if [[ -z "${existing}" ]]; then
+              gh issue create --title "${title}" --body "SpotConnect ${LATEST} is available, but the automated workflow could not push its prepared update branch. Please update from ${CURRENT} manually and inspect the failed workflow run."
+            fi
+            exit 1
+          fi
+          if gh pr list --state open --head "${branch}" --json number --jq 'length > 0' | grep -q true; then
+            exit 0
+          fi
+          if ! gh pr create \
+            --base main \
+            --head "${branch}" \
+            --title "Update SpotConnect to ${LATEST}" \
+            --body "Updates the pinned upstream release from ${CURRENT} to ${LATEST}, refreshes the verified archive checksum, and resets the packaging revision.\n\nUpstream release: https://github.com/philippe44/SpotConnect/releases/tag/${LATEST}"; then
+            title="SpotConnect ${LATEST} update branch is ready"
+            existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
+            if [[ -z "${existing}" ]]; then
+              gh issue create --title "${title}" --body "The workflow prepared and pushed branch \`${branch}\`, but repository policy prevented it from opening a pull request. Create the PR manually."
+            fi
+            exit 1
+          fi

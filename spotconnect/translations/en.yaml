@@ -1,0 +1,28 @@
+configuration:
+  airplay_enabled:
+    name: Enable AirPlay bridge
+    description: Discover AirPlay receivers and expose them as Spotify Connect devices.
+  upnp_enabled:
+    name: Enable UPnP bridge
+    description: Also discover UPnP/DLNA renderers and expose them as Spotify Connect devices.
+  network_interface:
+    name: Network interface or IP address
+    description: Leave empty for automatic selection. Set a host interface name or LAN IP if discovery uses the wrong adapter.
+  bitrate:
+    name: Spotify bitrate
+    description: Vorbis bitrate requested from Spotify, in kbit/s.
+  name_format:
+    name: Device name format
+    description: C-style format for generated Spotify devices. It must contain %s for the receiver name.
+  store_credentials:
+    name: Store reusable Spotify credentials
+    description: Store per-device reusable credentials in protected app data so devices can reconnect after a restart.
+  log_level:
+    name: Log level
+    description: Verbosity of SpotConnect logs.
+  airplay_codec:
+    name: AirPlay output codec
+    description: ALAC is recommended; PCM can help with unusual receivers.
+  upnp_codec:
+    name: UPnP output codec
+    description: SpotConnect codec expression such as flc, wav, mp3:320, aac:320, vorbis:320, or opus:320.

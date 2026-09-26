@@ -1,0 +1,9 @@
+SpotConnect is Copyright (c) 2023 Philippe G. and contributors.
+
+The application downloads unmodified SpotConnect release binaries from:
+https://github.com/philippe44/SpotConnect
+
+The binaries identify their license as GNU GPL version 3 or later when invoked
+with the `-t` option. Corresponding source is available under the matching tag
+in the upstream repository. No Spotify credentials or upstream private client
+information are included in this source repository.

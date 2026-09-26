@@ -1,0 +1,56 @@
+name: Lint and validate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Run local validations
+        run: ./tests/validate.sh
+
+      - name: Run Home Assistant app linter
+        uses: frenck/action-addon-linter@v2.21
+        with:
+          path: ./spotconnect
+
+  version-bump:
+    name: Require an app version bump
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Check runtime changes against version
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          runtime_changes="$(git diff --name-only "origin/${BASE_REF}...HEAD" -- spotconnect | grep -Ev '(^|/)(CHANGELOG|DOCS|README)\.md$' || true)"
+          if [[ -z "${runtime_changes}" ]]; then
+            exit 0
+          fi
+          previous="$(git show "origin/${BASE_REF}:spotconnect/config.yaml" | sed -n 's/^version: "\([^"]*\)"/\1/p')"
+          current="$(sed -n 's/^version: "\([^"]*\)"/\1/p' spotconnect/config.yaml)"
+          if [[ "${previous}" == "${current}" ]]; then
+            echo "Runtime files changed without incrementing the app version (${current})." >&2
+            exit 1
+          fi
