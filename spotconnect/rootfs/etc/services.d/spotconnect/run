@@ -50,6 +50,12 @@ start_bridge() {
   local binary="$2"
   local codec="$3"
   local config_file="/data/${mode}.xml"
+
+  if [[ ! -s "${config_file}" ]]; then
+    printf '<%s><common/></%s>\n' "${mode}" "${mode}" > "${config_file}"
+    chmod 0600 "${config_file}"
+  fi
+
   local -a command=(
     "${binary}"
     -x "${config_file}"

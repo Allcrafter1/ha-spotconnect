@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.20.8-10
+
+- Create a valid minimal SpotConnect XML configuration on first start so a new
+  installation starts without the misleading upstream config-file error.
+
 ## 0.20.8-9
 
 - Remove the experimental same-host AirCast binary patches and mDNS relay.
