@@ -75,7 +75,11 @@ start_bridge() {
 }
 
 if bashio::var.true "${airplay_enabled}"; then
-  /usr/bin/mdns-relay &
+  if [[ "${log_level}" == "debug" || "${log_level}" == "sdebug" ]]; then
+    MDNS_RELAY_DEBUG=1 /usr/bin/mdns-relay &
+  else
+    /usr/bin/mdns-relay &
+  fi
   pids+=("$!")
   start_bridge spotraop /usr/bin/spotraop "${airplay_codec}"
 fi

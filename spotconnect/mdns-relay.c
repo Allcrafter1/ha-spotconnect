@@ -106,6 +106,8 @@ int main(void) {
     struct sockaddr_in browser = {0};
     bool browser_known = false;
     bool reported_forward = false;
+    bool reported_raop = false;
+    bool debug = getenv("MDNS_RELAY_DEBUG") != NULL;
     uint8_t packet[PACKET_SIZE];
 
     if (receive_fd < 0 || send_fd < 0) {
@@ -162,10 +164,13 @@ int main(void) {
             browser = source;
             browser_known = true;
             reported_forward = false;
+            reported_raop = false;
             continue;
         }
 
         if (response && browser_known) {
+            bool raop_response =
+                contains_raop_question(packet, (size_t)received);
             if (sendto(send_fd, packet, (size_t)received, 0,
                        (struct sockaddr *)&browser, sizeof(browser)) < 0) {
                 perror("mdns-relay: sendto");
@@ -176,6 +181,15 @@ int main(void) {
                         "mdns-relay: forwarding multicast responses to "
                         "SpotConnect\n");
                 reported_forward = true;
+            }
+            if (debug && raop_response && !reported_raop) {
+                fprintf(stderr, "mdns-relay: RAOP response (%zd bytes): ",
+                        received);
+                for (ssize_t index = 0; index < received; ++index) {
+                    fprintf(stderr, "%02x", packet[index]);
+                }
+                fputc('\n', stderr);
+                reported_raop = true;
             }
         }
     }

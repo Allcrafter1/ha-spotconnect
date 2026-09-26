@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.20.8-5
+
+- Log one captured RAOP response at debug level to make same-host mDNS
+  compatibility problems diagnosable.
+
 ## 0.20.8-4
 
 - Relay same-host multicast mDNS responses to SpotConnect's RAOP browser as a
