@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.8-9
+
+- Remove the experimental same-host AirCast binary patches and mDNS relay.
+  Native and network-visible AirPlay receivers continue to use the unmodified
+  upstream SpotConnect binary.
+
 ## 0.20.8-8
 
 - Make debug diagnostics report the RAOP browser port and only summarize a

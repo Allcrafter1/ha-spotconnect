@@ -45,26 +45,14 @@ If no receiver appears:
 ### AirCast and Cast Audio Receiver Lab
 
 AirCast turns Google Cast receivers into virtual AirPlay receivers. SpotConnect
-supports these same-host receivers by requesting unicast mDNS responses. The
-app also contains a local-only mDNS relay for AirCast versions that send the
-answer back to multicast port 5353 despite that request. The resulting chain
-is:
+upstream ignores proxy announcements when AirCast and SpotConnect run on the
+same host. This repository deliberately keeps the upstream executable
+unmodified, so that same-host conversion path is not supported.
 
-`Spotify -> SpotConnect -> AirPlay -> AirCast -> Google Cast receiver`
-
-Cast Audio Receiver Lab does not conflict with SpotConnect. It provides Cast
-receivers which AirCast can expose through AirPlay. The chain then becomes:
-
-`Spotify -> SpotConnect -> AirCast -> Cast Audio Receiver Lab -> audio output`
-
-For a Home Assistant OS installation, set AirCast's **address** option to the
-Home Assistant LAN IPv4 address. This prevents AirCast from switching its
-virtual receivers between the LAN, Docker, and loopback interfaces. Start
-AirCast before SpotConnect after changing that option.
-
-Avoid creating a route that sends the final audio output back into the same
-receiver chain; that would form an audio loop. Merely running all three apps at
-the same time does not create such a loop.
+Cast Audio Receiver Lab has no direct port or process conflict with
+SpotConnect. It can run at the same time, but its Cast receivers only reach
+SpotConnect through AirCast's unsupported same-host proxy path. Native AirPlay
+receivers and AirPlay services visible from another network host are unaffected.
 
 Apple TV devices may require SpotConnect's interactive pairing procedure. The
 Home Assistant app does not currently automate that procedure; ordinary

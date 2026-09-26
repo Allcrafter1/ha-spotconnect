@@ -34,11 +34,7 @@ aktivieren, ohne ein zweites Paket oder Image pflegen zu müssen.
   its per-player audio web server.
 - Downloads the official, pinned SpotConnect release during the container
   build and verifies the release archive with SHA-256.
-- Applies a narrowly validated binary patch to the AirPlay browser so virtual
-  receivers advertised by AirCast on the same host can answer via explicit
-  unicast mDNS. A small local relay covers responders that still answer on the
-  multicast port. Every architecture-specific replacement must match exactly
-  once, otherwise the build fails safely.
+- Runs the unmodified, checksum-verified upstream SpotConnect executables.
 - Publishes pre-built, signed multi-architecture images to GitHub Container
   Registry with Home Assistant's maintained builder actions.
 - Stores runtime configuration and reusable device credentials only in Home
@@ -59,7 +55,7 @@ images from that branch. A fully successful update is merged automatically;
 the merge publishes the multi-architecture image and Home Assistant sees the
 new app version.
 
-If downloading, patching, validation, building, PR creation, or merging fails,
+If downloading, validation, building, PR creation, or merging fails,
 the update is not merged. The workflow leaves the PR open where applicable and
 creates a GitHub issue for attention. Failed workflow runs are also visible in
 the repository's Actions tab and use the repository owner's normal GitHub
@@ -90,5 +86,4 @@ GPL-3.0-or-later terms via `spotraop -t` and `spotupnp -t`; corresponding source
 for the pinned version is available from the
 [SpotConnect 0.20.8 tag](https://github.com/philippe44/SpotConnect/tree/0.20.8).
 This repository contains packaging and supervision code rather than a fork of
-SpotConnect. For same-host AirCast compatibility, three narrowly validated call
-sites in the packaged `spotraop` binary are changed as documented above.
+SpotConnect.
