@@ -37,9 +37,8 @@ aktivieren, ohne ein zweites Paket oder Image pflegen zu müssen.
 - Applies a narrowly validated binary patch to the AirPlay browser so virtual
   receivers advertised by AirCast on the same host can answer via explicit
   unicast mDNS. A small local relay covers responders that still answer on the
-  multicast port. The build fails if the expected upstream instructions are
-  not found.
-  exactly once.
+  multicast port. Every architecture-specific replacement must match exactly
+  once, otherwise the build fails safely.
 - Publishes pre-built, signed multi-architecture images to GitHub Container
   Registry with Home Assistant's maintained builder actions.
 - Stores runtime configuration and reusable device credentials only in Home
@@ -91,5 +90,5 @@ GPL-3.0-or-later terms via `spotraop -t` and `spotupnp -t`; corresponding source
 for the pinned version is available from the
 [SpotConnect 0.20.8 tag](https://github.com/philippe44/SpotConnect/tree/0.20.8).
 This repository contains packaging and supervision code rather than a fork of
-SpotConnect. For same-host AirCast compatibility, two narrowly validated call
+SpotConnect. For same-host AirCast compatibility, three narrowly validated call
 sites in the packaged `spotraop` binary are changed as documented above.

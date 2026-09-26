@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.8-7
+
+- Accept legitimate same-subnet proxy announcements emitted by AirCast/RCast.
+  The architecture-specific compatibility patch is exact-match validated and
+  will fail safely if a future upstream binary changes.
+
 ## 0.20.8-6
 
 - Preserve the local source address when relaying same-host mDNS responses so
