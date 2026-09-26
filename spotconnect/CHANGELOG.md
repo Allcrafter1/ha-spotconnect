@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.20.7-2
+
+- Remove redundant Supervisor defaults from the app configuration.
+
 ## 0.20.7-1
 
 - Initial Home Assistant app release.
