@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.20.8-1
+
+- Update SpotConnect from 0.20.7 to 0.20.8.
+
 ## 0.20.7-2
 
 - Remove redundant Supervisor defaults from the app configuration.
