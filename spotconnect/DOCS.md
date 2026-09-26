@@ -45,7 +45,7 @@ If no receiver appears:
 ### AirCast and Cast Audio Receiver Lab
 
 AirCast turns Google Cast receivers into virtual AirPlay receivers. SpotConnect
-supports these same-host receivers by using legacy-unicast mDNS discovery. The
+supports these same-host receivers by requesting unicast mDNS responses. The
 resulting chain is:
 
 `Spotify -> SpotConnect -> AirPlay -> AirCast -> Google Cast receiver`

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.20.8-3
+
+- Request explicit unicast mDNS responses so same-host AirCast receivers are
+  discoverable even with AirCast's minimal mDNS responder.
+
 ## 0.20.8-2
 
 - Add Home Assistant icon and logo artwork.
