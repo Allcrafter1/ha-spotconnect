@@ -8,6 +8,7 @@ required_files=(
   repository.yaml
   spotconnect/config.yaml
   spotconnect/Dockerfile
+  spotconnect/mdns-relay.c
   spotconnect/patch-mdns.py
   spotconnect/icon.png
   spotconnect/logo.png
@@ -26,6 +27,7 @@ bash -n spotconnect/rootfs/etc/services.d/spotconnect/run
 bash -n spotconnect/rootfs/etc/services.d/spotconnect/finish
 PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/ha-spotconnect-pycache" \
   python3 -m py_compile spotconnect/patch-mdns.py
+cc -std=c11 -Wall -Wextra -Werror -fsyntax-only spotconnect/mdns-relay.c
 
 upstream="$(tr -d '[:space:]' < .upstream-version)"
 app_version="$(sed -n 's/^version: "\([^"]*\)"/\1/p' spotconnect/config.yaml)"

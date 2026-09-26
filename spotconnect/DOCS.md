@@ -46,7 +46,9 @@ If no receiver appears:
 
 AirCast turns Google Cast receivers into virtual AirPlay receivers. SpotConnect
 supports these same-host receivers by requesting unicast mDNS responses. The
-resulting chain is:
+app also contains a local-only mDNS relay for AirCast versions that send the
+answer back to multicast port 5353 despite that request. The resulting chain
+is:
 
 `Spotify -> SpotConnect -> AirPlay -> AirCast -> Google Cast receiver`
 

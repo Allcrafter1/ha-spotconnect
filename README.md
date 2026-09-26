@@ -36,7 +36,9 @@ aktivieren, ohne ein zweites Paket oder Image pflegen zu müssen.
   build and verifies the release archive with SHA-256.
 - Applies a narrowly validated binary patch to the AirPlay browser so virtual
   receivers advertised by AirCast on the same host can answer via explicit
-  unicast mDNS. The build fails if the expected upstream instructions are not found
+  unicast mDNS. A small local relay covers responders that still answer on the
+  multicast port. The build fails if the expected upstream instructions are
+  not found.
   exactly once.
 - Publishes pre-built, signed multi-architecture images to GitHub Container
   Registry with Home Assistant's maintained builder actions.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.20.8-4
+
+- Relay same-host multicast mDNS responses to SpotConnect's RAOP browser as a
+  fallback for AirCast responders that do not honor unicast response requests.
+
 ## 0.20.8-3
 
 - Request explicit unicast mDNS responses so same-host AirCast receivers are

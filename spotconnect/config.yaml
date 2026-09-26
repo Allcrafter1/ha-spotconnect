@@ -1,5 +1,5 @@
 name: SpotConnect
-version: "0.20.8-3"
+version: "0.20.8-4"
 slug: spotconnect
 description: Make AirPlay devices available as Spotify Connect devices
 url: "https://github.com/Allcrafter1/ha-spotconnect"
