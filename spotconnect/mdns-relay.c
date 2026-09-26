@@ -162,6 +162,12 @@ int main(void) {
         if (!response && ntohs(source.sin_port) != MDNS_PORT &&
             is_local_address(source.sin_addr) &&
             contains_raop_question(packet, (size_t)received)) {
+            if (debug && !browser_known) {
+                fprintf(stderr,
+                        "mdns-relay: captured the RAOP browser on UDP port "
+                        "%u\n",
+                        ntohs(source.sin_port));
+            }
             if (!send_bound) {
                 struct sockaddr_in send_address = {
                     .sin_family = AF_INET,
@@ -197,7 +203,7 @@ int main(void) {
                         "SpotConnect\n");
                 reported_forward = true;
             }
-            if (debug && raop_response && !reported_raop) {
+            if (debug && raop_response && received >= 512 && !reported_raop) {
                 fprintf(stderr,
                         "mdns-relay: forwarded a complete RAOP response "
                         "(%zd bytes)\n",

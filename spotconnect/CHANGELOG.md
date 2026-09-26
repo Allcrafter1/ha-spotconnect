@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.20.8-8
+
+- Make debug diagnostics report the RAOP browser port and only summarize a
+  complete AirCast response instead of a short goodbye record.
+
 ## 0.20.8-7
 
 - Accept legitimate same-subnet proxy announcements emitted by AirCast/RCast.
