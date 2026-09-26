@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.20.8-2
+
+- Add Home Assistant icon and logo artwork.
+- Discover same-host AirPlay bridges such as AirCast through legacy-unicast
+  mDNS queries.
+- Document the interaction with AirCast and Cast Audio Receiver Lab.
+
 ## 0.20.8-1
 
 - Update SpotConnect from 0.20.7 to 0.20.8.

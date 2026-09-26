@@ -34,6 +34,10 @@ aktivieren, ohne ein zweites Paket oder Image pflegen zu müssen.
   its per-player audio web server.
 - Downloads the official, pinned SpotConnect release during the container
   build and verifies the release archive with SHA-256.
+- Applies a narrowly validated binary patch to the AirPlay browser so virtual
+  receivers advertised by AirCast on the same host can answer via unicast
+  mDNS. The build fails if the expected upstream instruction is not found
+  exactly once.
 - Publishes pre-built, signed multi-architecture images to GitHub Container
   Registry with Home Assistant's maintained builder actions.
 - Stores runtime configuration and reusable device credentials only in Home
@@ -48,13 +52,23 @@ Detailed options and troubleshooting are in
 
 The repository checks GitHub's latest SpotConnect release every day. When a
 new stable version appears, the workflow verifies that the expected release
-archive exists, calculates its SHA-256 checksum, updates the pinned version,
-and opens a pull request. If GitHub policy prevents creating the branch or PR,
-it opens an issue instead, so upstream updates are not silent.
+archive exists, calculates its SHA-256 checksum, and opens a pull request. It
+then runs the Home Assistant linter and builds both `amd64` and `aarch64`
+images from that branch. A fully successful update is merged automatically;
+the merge publishes the multi-architecture image and Home Assistant sees the
+new app version.
 
-Merging the update PR triggers multi-architecture image builds. Home Assistant
-then sees the changed app version and offers the normal update action.
-Dependabot separately keeps GitHub Actions dependencies current.
+If downloading, patching, validation, building, PR creation, or merging fails,
+the update is not merged. The workflow leaves the PR open where applicable and
+creates a GitHub issue for attention. Failed workflow runs are also visible in
+the repository's Actions tab and use the repository owner's normal GitHub
+Actions notification settings.
+
+Home Assistant offers the published version as a normal app update. To also
+install it without interaction, enable **Automatic updates** on the installed
+SpotConnect app. Dependabot separately opens pull requests for GitHub Actions
+dependencies; those are intentionally not auto-merged with SpotConnect
+releases.
 
 ## Development
 
@@ -73,6 +87,7 @@ change after `0.20.7-1` becomes `0.20.7-2`.
 SpotConnect is developed by Philippe G. The bundled executables report the
 GPL-3.0-or-later terms via `spotraop -t` and `spotupnp -t`; corresponding source
 for the pinned version is available from the
-[SpotConnect 0.20.7 tag](https://github.com/philippe44/SpotConnect/tree/0.20.7).
-This repository contains packaging and supervision code, not modified
-SpotConnect source code.
+[SpotConnect 0.20.8 tag](https://github.com/philippe44/SpotConnect/tree/0.20.8).
+This repository contains packaging and supervision code rather than a fork of
+SpotConnect. For same-host AirCast compatibility, the packaged `spotraop`
+binary is changed at one validated instruction as documented above.

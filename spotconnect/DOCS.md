@@ -42,6 +42,28 @@ If no receiver appears:
 3. Set **Network interface or IP address** to Home Assistant's LAN address.
 4. Verify that multicast/mDNS is not blocked between VLANs or Wi-Fi clients.
 
+### AirCast and Cast Audio Receiver Lab
+
+AirCast turns Google Cast receivers into virtual AirPlay receivers. SpotConnect
+supports these same-host receivers by using legacy-unicast mDNS discovery. The
+resulting chain is:
+
+`Spotify -> SpotConnect -> AirPlay -> AirCast -> Google Cast receiver`
+
+Cast Audio Receiver Lab does not conflict with SpotConnect. It provides Cast
+receivers which AirCast can expose through AirPlay. The chain then becomes:
+
+`Spotify -> SpotConnect -> AirCast -> Cast Audio Receiver Lab -> audio output`
+
+For a Home Assistant OS installation, set AirCast's **address** option to the
+Home Assistant LAN IPv4 address. This prevents AirCast from switching its
+virtual receivers between the LAN, Docker, and loopback interfaces. Start
+AirCast before SpotConnect after changing that option.
+
+Avoid creating a route that sends the final audio output back into the same
+receiver chain; that would form an audio loop. Merely running all three apps at
+the same time does not create such a loop.
+
 Apple TV devices may require SpotConnect's interactive pairing procedure. The
 Home Assistant app does not currently automate that procedure; ordinary
 AirPlay speakers and software receivers do not need it.
