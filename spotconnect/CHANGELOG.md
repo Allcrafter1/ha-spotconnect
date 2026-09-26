@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.20.8-6
+
+- Preserve the local source address when relaying same-host mDNS responses so
+  SpotConnect accepts announcements from AirCast/RCast instead of treating
+  them as proxy announcements.
+- Keep debug diagnostics concise and avoid logging complete mDNS packets.
+
 ## 0.20.8-5
 
 - Log one captured RAOP response at debug level to make same-host mDNS

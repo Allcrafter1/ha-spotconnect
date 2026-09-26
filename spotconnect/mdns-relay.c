@@ -105,6 +105,7 @@ int main(void) {
     struct sockaddr_in bind_address = {0};
     struct sockaddr_in browser = {0};
     bool browser_known = false;
+    bool send_bound = false;
     bool reported_forward = false;
     bool reported_raop = false;
     bool debug = getenv("MDNS_RELAY_DEBUG") != NULL;
@@ -161,10 +162,24 @@ int main(void) {
         if (!response && ntohs(source.sin_port) != MDNS_PORT &&
             is_local_address(source.sin_addr) &&
             contains_raop_question(packet, (size_t)received)) {
+            if (!send_bound) {
+                struct sockaddr_in send_address = {
+                    .sin_family = AF_INET,
+                    .sin_port = htons(0),
+                    .sin_addr = source.sin_addr,
+                };
+                if (bind(send_fd, (struct sockaddr *)&send_address,
+                         sizeof(send_address)) != 0) {
+                    perror("mdns-relay: bind forwarding socket");
+                    return EXIT_FAILURE;
+                }
+                send_bound = true;
+                fprintf(stderr,
+                        "mdns-relay: forwarding from the RAOP browser "
+                        "address\n");
+            }
             browser = source;
             browser_known = true;
-            reported_forward = false;
-            reported_raop = false;
             continue;
         }
 
@@ -183,12 +198,10 @@ int main(void) {
                 reported_forward = true;
             }
             if (debug && raop_response && !reported_raop) {
-                fprintf(stderr, "mdns-relay: RAOP response (%zd bytes): ",
+                fprintf(stderr,
+                        "mdns-relay: forwarded a complete RAOP response "
+                        "(%zd bytes)\n",
                         received);
-                for (ssize_t index = 0; index < received; ++index) {
-                    fprintf(stderr, "%02x", packet[index]);
-                }
-                fputc('\n', stderr);
                 reported_raop = true;
             }
         }
