@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.20.11-1
+
+- Update SpotConnect from 0.20.8 to 0.20.11.
+
 ## 0.20.8-10
 
 - Create a valid minimal SpotConnect XML configuration on first start so a new
