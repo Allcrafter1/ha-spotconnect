@@ -72,6 +72,7 @@ jobs:
           arch: ${{ matrix.arch }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           context: ./spotconnect
+          load: "true"
           image: ${{ matrix.image }}
           image-tags: |
             ${{ needs.prepare.outputs.version }}
@@ -83,6 +84,19 @@ jobs:
             io.hass.url=https://github.com/Allcrafter1/ha-spotconnect
           push: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' }}
           version: ${{ needs.prepare.outputs.version }}
+
+      - name: Smoke test native executables and service scripts
+        env:
+          IMAGE: ${{ matrix.image }}:${{ needs.prepare.outputs.version }}
+        run: |
+          docker run --rm --entrypoint /bin/bash "${IMAGE}" -ec '
+            bash -n /etc/services.d/spotconnect/run
+            bash -n /etc/services.d/spotconnect/finish
+            test -x /init
+            test -x /usr/bin/bashio
+            /usr/bin/spotraop -t
+            /usr/bin/spotupnp -t
+          '
 
   manifest:
     name: Publish multi-architecture manifest

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.11-2
+
+- Update the Home Assistant base image from 3.23 to 3.24.
+- Verify both SpotConnect executables and service-script syntax on each native
+  architecture before publishing the multi-architecture image.
+
 ## 0.20.11-1
 
 - Update SpotConnect from 0.20.8 to 0.20.11.
