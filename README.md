@@ -71,10 +71,10 @@ the repository's Actions tab.
 
 Home Assistant offers the published version as a normal app update. To also
 install it without interaction, enable **Automatic updates** on the installed
-SpotConnect app. Dependabot separately checks the Docker base image daily and
-GitHub Actions dependencies weekly, opening pull requests assigned to the
-owner. These are intentionally not auto-merged; base-image changes also need
-an app packaging version bump before release.
+SpotConnect app. The daily workflow also checks GHCR for newer stable base-image
+tags and opens an issue assigned to the owner. Base-image updates require review
+and an app packaging version bump. Dependabot separately checks GitHub Actions
+dependencies weekly and opens assigned pull requests; these are not auto-merged.
 
 ## Development
 

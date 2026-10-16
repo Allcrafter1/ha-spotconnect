@@ -217,6 +217,27 @@ jobs:
             gh issue create --assignee "${GITHUB_REPOSITORY_OWNER}" --title "${title}" --body-file /tmp/spotconnect-notification.md
           fi
 
+      # Dependabot cannot resolve our ARG-based FROM, so query GHCR directly.
+      - name: Notify owner about a newer base image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current="$(sed -n 's/^ARG BUILD_FROM=ghcr.io\/home-assistant\/base://p' spotconnect/Dockerfile)"
+          token="$(curl --fail --silent --show-error --retry 3 'https://ghcr.io/token?service=ghcr.io&scope=repository:home-assistant/base:pull' | jq -er .token)"
+          tags="$(curl --fail --silent --show-error --retry 3 -H "Authorization: Bearer ${token}" https://ghcr.io/v2/home-assistant/base/tags/list)"
+          latest="$(jq -r '.tags[] | select(test("^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"))' <<< "${tags}" | sort -V | tail -n1)"
+          test -n "${latest}"
+          newest="$(printf '%s\n%s\n' "${current}" "${latest}" | sort -V | tail -n1)"
+          if [[ "${latest}" == "${current}" || "${newest}" != "${latest}" ]]; then
+            exit 0
+          fi
+          title="SpotConnect base image ${latest} is available"
+          existing="$(gh issue list --state all --search "${title} in:title" --json title | jq -r --arg title "${title}" '.[] | select(.title == $title) | .title')"
+          if [[ -z "${existing}" ]]; then
+            printf 'A newer Home Assistant base image is available: ghcr.io/home-assistant/base:%s (currently %s). Review compatibility, update BUILD_FROM, and bump the app packaging version before publishing.\n' "${latest}" "${current}" > /tmp/spotconnect-base-notification.md
+            gh issue create --assignee "${GITHUB_REPOSITORY_OWNER}" --title "${title}" --body-file /tmp/spotconnect-base-notification.md
+          fi
+
       - name: Create issue when update automation fails
         if: failure()
         env:
