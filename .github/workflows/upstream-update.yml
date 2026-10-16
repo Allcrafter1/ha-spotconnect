@@ -205,6 +205,18 @@ jobs:
           docker manifest inspect "ghcr.io/allcrafter1/ha-spotconnect:${version}" > /tmp/spotconnect-manifest.json
           jq -e '[.manifests[].platform | select(.os == "linux") | .architecture] | (index("amd64") != null and index("arm64") != null)' /tmp/spotconnect-manifest.json
 
+      - name: Notify owner about a published version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(sed -n 's/^version: "\([^"]*\)"/\1/p' spotconnect/config.yaml)"
+          title="SpotConnect ${version} is available"
+          existing="$(gh issue list --state all --search "${title} in:title" --json title | jq -r --arg title "${title}" '.[] | select(.title == $title) | .title')"
+          if [[ -z "${existing}" ]]; then
+            printf 'SpotConnect %s has been published. The image is available for amd64 and aarch64. You can install or update the app through Home Assistant.\n\nImage: ghcr.io/allcrafter1/ha-spotconnect:%s\n' "${version}" "${version}" > /tmp/spotconnect-notification.md
+            gh issue create --assignee "${GITHUB_REPOSITORY_OWNER}" --title "${title}" --body-file /tmp/spotconnect-notification.md
+          fi
+
       - name: Create issue when update automation fails
         if: failure()
         env:

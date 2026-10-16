@@ -56,6 +56,9 @@ the workflow explicitly starts publication after merging and waits for the
 multi-architecture image. Home Assistant can install the new version once
 publication completes. The daily check also verifies the published image for
 both architectures even when no new upstream release exists.
+After verification, the bot creates one issue per published app version,
+assigned to the repository owner, including versions recovered after a failed
+publication. Closed notification issues are not recreated.
 
 If downloading, validation, building, PR creation, or merging fails,
 the update is not merged. Publication errors can occur after merging; in that
@@ -68,9 +71,10 @@ the repository's Actions tab.
 
 Home Assistant offers the published version as a normal app update. To also
 install it without interaction, enable **Automatic updates** on the installed
-SpotConnect app. Dependabot separately opens pull requests for GitHub Actions
-dependencies; those are intentionally not auto-merged with SpotConnect
-releases.
+SpotConnect app. Dependabot separately checks the Docker base image daily and
+GitHub Actions dependencies weekly, opening pull requests assigned to the
+owner. These are intentionally not auto-merged; base-image changes also need
+an app packaging version bump before release.
 
 ## Development
 

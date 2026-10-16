@@ -9,3 +9,13 @@ updates:
       timezone: Europe/Berlin
     labels:
       - dependencies
+    assignees:
+      - Allcrafter1
+  - package-ecosystem: docker
+    directory: /spotconnect
+    schedule:
+      interval: daily
+    assignees:
+      - Allcrafter1
+    labels:
+      - dependencies
