@@ -52,11 +52,15 @@ new stable version appears, the workflow verifies that the expected release
 archive exists, calculates its SHA-256 checksum, and opens a pull request. It
 then runs the Home Assistant linter and builds both `amd64` and `aarch64`
 images from that branch. A fully successful update is merged automatically;
-the merge publishes the multi-architecture image and Home Assistant sees the
-new app version.
+the workflow explicitly starts publication after merging and waits for the
+multi-architecture image. Home Assistant can install the new version once
+publication completes. The daily check also verifies the published image for
+both architectures even when no new upstream release exists.
 
 If downloading, validation, building, PR creation, or merging fails,
-the update is not merged. The workflow leaves the PR open where applicable and
+the update is not merged. Publication errors can occur after merging; in that
+case the advertised version is not installable until publication is repaired.
+The workflow leaves the PR open where applicable and
 creates a GitHub issue assigned to the repository owner. That assignment
 creates a personal GitHub notification; email delivery still follows the
 owner's GitHub notification settings. Failed workflow runs are also visible in

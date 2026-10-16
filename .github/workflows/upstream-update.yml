@@ -178,6 +178,33 @@ jobs:
           PR_NUMBER: ${{ steps.update.outputs.pr_number }}
         run: gh pr merge "${PR_NUMBER}" --squash --delete-branch
 
+      # GITHUB_TOKEN merges do not trigger push workflows. Dispatch explicitly.
+      - name: Publish merged update and wait for completion
+        if: steps.release.outputs.update == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        timeout-minutes: 30
+        run: |
+          previous_id="$(gh run list --workflow build.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          gh workflow run build.yml --ref main
+          run_id=""
+          for _ in $(seq 1 30); do
+            run_id="$(gh run list --workflow build.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+            if [[ -n "${run_id}" && "${run_id}" != "${previous_id}" ]]; then
+              break
+            fi
+            run_id=""
+            sleep 5
+          done
+          test -n "${run_id}"
+          gh run watch "${run_id}" --exit-status
+
+      - name: Verify current published image even when upstream is unchanged
+        run: |
+          version="$(sed -n 's/^version: "\([^"]*\)"/\1/p' spotconnect/config.yaml)"
+          docker manifest inspect "ghcr.io/allcrafter1/ha-spotconnect:${version}" > /tmp/spotconnect-manifest.json
+          jq -e '[.manifests[].platform | select(.os == "linux") | .architecture] | (index("amd64") != null and index("arm64") != null)' /tmp/spotconnect-manifest.json
+
       - name: Create issue when update automation fails
         if: failure()
         env:
@@ -190,7 +217,7 @@ jobs:
             gh issue create \
               --assignee "${GITHUB_REPOSITORY_OWNER}" \
               --title "${title}" \
-              --body "The automatic SpotConnect update workflow failed. No unverified update was merged. Inspect the failed run: ${RUN_URL}"
+              --body "The SpotConnect update or publication check failed. An update may already be merged while its image is unavailable. Inspect the failed run before retrying installation: ${RUN_URL}"
           else
             gh issue comment "${existing}" --body "The automatic update workflow failed again: ${RUN_URL}"
           fi
